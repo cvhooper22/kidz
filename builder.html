@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Future Architect</title>
+<style>
+:root{
+  --pink:#ff4fa3; --yellow:#ffd93d; --blue:#28b5ff; --green:#3ddc84; --purple:#8a5cff; --orange:#ff8a3d; --ink:#2b1b5a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; color:var(--ink);
+  font-family:"Trebuchet MS","Comic Sans MS","Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.25) 0 6px, transparent 7px) 0 0/48px 48px,
+    repeating-linear-gradient(45deg, rgba(255,255,255,.10) 0 18px, transparent 18px 36px),
+    linear-gradient(135deg,#ff6ec4,#7873f5 45%,#28b5ff);
+  background-attachment:fixed;
+}
+#app{max-width:1000px;margin:0 auto;padding:16px}
+.screen{display:none;animation:pop .35s ease}
+.screen.active{display:block}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.card{
+  background:#fffbe8; border:5px solid var(--ink); border-radius:24px; padding:20px;
+  box-shadow:0 8px 0 var(--ink); margin-bottom:16px;
+  background-image:repeating-linear-gradient(90deg,rgba(255,217,61,.18) 0 14px,transparent 14px 28px);
+}
+h1{font-size:clamp(2.2rem,7vw,4rem);margin:0;text-align:center;
+  background:linear-gradient(90deg,#ff4fa3,#ff8a3d,#ffd93d,#3ddc84,#28b5ff,#8a5cff);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:2px var(--ink); paint-order:stroke fill; filter:drop-shadow(0 4px 0 var(--ink));}
+h2{margin:0 0 8px;font-size:1.7rem}
+p{line-height:1.45}
+.center{text-align:center}
+button{
+  font:inherit;font-weight:800;font-size:1.1rem;color:#fff;cursor:pointer;
+  background:linear-gradient(180deg,var(--pink),#d61f7f); border:4px solid var(--ink); border-radius:16px;
+  padding:10px 20px; box-shadow:0 5px 0 var(--ink); transition:transform .08s, box-shadow .08s;
+}
+button:hover{transform:translateY(-2px)}
+button:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+button.green{background:linear-gradient(180deg,#5cf0a0,#1fae5f)}
+button.blue{background:linear-gradient(180deg,#5fd0ff,#1a86d6)}
+button.yellow{background:linear-gradient(180deg,#ffe66d,#f2b705);color:var(--ink)}
+button:disabled{filter:grayscale(1);opacity:.6;cursor:not-allowed}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.pill{background:var(--yellow);border:3px solid var(--ink);border-radius:999px;padding:4px 14px;font-weight:800}
+canvas{display:block;max-width:100%;border:5px solid var(--ink);border-radius:16px;background:#fff;touch-action:none}
+#drawCanvas{margin:10px auto;cursor:crosshair}
+button.sel{outline:5px solid #3ddc84;outline-offset:2px}
+.sw{width:38px;height:38px;padding:0;border-radius:50%}
+.mats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.mat{border:5px solid var(--ink);border-radius:18px;padding:10px;background:#fff;cursor:pointer;display:flex;gap:10px;align-items:center;transition:transform .1s}
+.mat:hover{transform:scale(1.02)}
+.mat.sel{background:#d8ffe6;border-color:#1fae5f;box-shadow:0 0 0 5px #3ddc84}
+.mat canvas{width:64px;height:64px;border-width:3px;flex:none}
+.mat b{font-size:1.2rem}
+.mat small{display:block;line-height:1.3}
+.reveal{text-align:center}
+.reveal .big{font-size:5rem;animation:bounce 1s infinite}
+@keyframes bounce{50%{transform:translateY(-14px) rotate(6deg)}}
+.dname{font-size:2.4rem;font-weight:900;color:#d61f7f}
+.prep{display:grid;grid-template-columns:1fr;gap:12px}
+#timer{font-size:2rem;font-weight:900;background:#fff;border:4px solid var(--ink);border-radius:14px;padding:2px 16px;min-width:110px;text-align:center}
+#timer.low{background:#ff5a5a;color:#fff;animation:bounce .5s infinite}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.item{background:#fff;border:4px solid var(--ink);border-radius:16px;padding:8px 10px;cursor:pointer;position:relative;user-select:none;transition:transform .1s}
+.item:hover{transform:translateY(-3px)}
+.item .e{font-size:1.8rem}
+.item .c{position:absolute;top:6px;right:8px;background:var(--yellow);border:2px solid var(--ink);border-radius:999px;padding:0 8px;font-weight:800}
+.item small{display:block;line-height:1.25}
+.item .help{margin-top:6px;font-weight:800;font-size:.85rem;border-radius:8px;padding:3px 6px}
+.help.big{background:#c9ffd9}.help.mid{background:#e6ffc9}.help.low{background:#fff3b8}.help.none{background:#eee;color:#777}
+.item.sel{background:#d8ffe6;border-color:#1fae5f;box-shadow:0 0 0 4px #3ddc84}
+.item.no{opacity:.45;cursor:not-allowed}
+.meter{height:26px;border:4px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden;min-width:180px;flex:1}
+.meter>div{height:100%;transition:width .3s,background .3s}
+.result-emoji{font-size:6rem}
+.win{color:#1fae5f}.lose{color:#e0244a}
+ul.why{text-align:left;display:inline-block}
+.conf{position:fixed;top:-30px;font-size:2rem;pointer-events:none;animation:fall 3s linear forwards;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.board{width:100%;max-width:520px;margin:10px auto;border-collapse:separate;border-spacing:0 6px;text-align:left}
+.board td{background:#fff;border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);padding:6px 12px;font-weight:800;font-size:1.15rem}
+.board td:first-child{border-left:3px solid var(--ink);border-radius:12px 0 0 12px;width:56px;text-align:center}
+.board td:last-child{border-right:3px solid var(--ink);border-radius:0 12px 12px 0;text-align:right}
+.board tr.me td{background:#fff3a0;animation:bounce 1s 3}
+.board tr.r1 td{background:linear-gradient(90deg,#fff3a0,#ffe066)}
+.board small{font-weight:600;opacity:.6}
+#nameIn{font:inherit;font-weight:800;font-size:1.3rem;padding:8px 14px;border:4px solid var(--ink);border-radius:14px;text-align:center;width:260px;max-width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.legend span{border:3px solid var(--ink);border-radius:999px;padding:2px 10px;font-weight:800;font-size:.9rem;background:#fff}
+.legend span.h{background:#c9ffd9}.legend span.z{background:#eee;color:#777}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+</style>
+</head>
+<body>
+<button id="muteBtn" title="Sound on/off" style="position:fixed;top:10px;right:10px;z-index:20;padding:4px 12px">🔊</button>
+<div id="app">
+
+<!-- TITLE -->
+<div class="screen active" id="s-title">
+  <div class="card center">
+    <h1>Future Architect</h1>
+    <p style="font-size:1.3rem">Design a building. Pick tough materials. Then get ready &mdash; a disaster is coming &mdash; natural or not! 🌪️🌊🌋💣🍯</p>
+    <p>Can your building survive? Every survivor earns <b>1 point</b>!</p>
+    <div class="pill" style="display:inline-block">Best score: <span id="best">0</span> ⭐</div>
+    <p>You have <b>3 lives</b> ❤️❤️❤️. Lose a life each time a building falls. Keep going to climb the leaderboard!</p>
+    <div class="row"><button class="green" id="startBtn">▶ Start Building!</button><button class="yellow" id="boardBtn">🏆 Leaderboard</button></div>
+  </div>
+</div>
+
+<!-- DRAW -->
+<div class="screen" id="s-draw">
+  <div class="card">
+    <div class="bar"><h2>1. Draw your building 🏗️</h2><span class="pill"><span class="lv"></span> · Round <span class="rnd"></span> · Score <span class="scr"></span> ⭐</span></div>
+    <p>Draw your building any way you like! ✏️ Use the pencil for free-form lines, 🪣 to fill a <b>closed</b> shape, and the eraser to fix mistakes. Tall, skinny buildings wobble more in wind and quakes!</p>
+    <canvas id="drawCanvas" width="640" height="480"></canvas>
+    <div class="row" id="toolRow">
+      <button class="yellow tool sel" data-tool="pen">✏️ Draw</button>
+      <button class="yellow tool" data-tool="fill">🪣 Fill</button>
+      <button class="yellow tool" data-tool="erase">🧽 Erase</button>
+      <button class="blue size" data-size="6">● Thin</button>
+      <button class="blue size sel" data-size="14">● Medium</button>
+      <button class="blue size" data-size="28">● Thick</button>
+    </div>
+    <div class="row" id="colorRow"></div>
+    <div class="row">
+      <button class="blue" id="undoBtn">↩️ Undo</button>
+      <button class="blue" id="clearBtn">🗑️ Clear</button>
+      <button class="blue" id="houseBtn">🎲 Starter building</button>
+      <button class="green" id="drawNext">Next: Materials ➜</button>
+    </div>
+    <p class="center" id="drawInfo"></p>
+  </div>
+</div>
+
+<!-- MATERIALS -->
+<div class="screen" id="s-mats">
+  <div class="card">
+    <div class="bar"><h2>2. Choose 2–4 materials 🧱</h2><span class="pill">Picked: <span id="matCount">0</span>/4</span></div>
+    <p>Every material is strong against some disasters and weak against others. Mix wisely!</p>
+    <div class="mats" id="matGrid"></div>
+    <div class="row">
+      <button class="blue" id="matBack">⬅ Back</button>
+      <button class="green" id="matNext" disabled>Build it & drop it somewhere! 🌍</button>
+    </div>
+  </div>
+</div>
+
+<!-- REVEAL -->
+<div class="screen" id="s-reveal">
+  <div class="card reveal">
+    <p>Your building has been placed in...</p>
+    <h2 id="locName" style="font-size:2.2rem"></h2>
+    <div class="big" id="dEmoji"></div>
+    <div class="dname" id="dName"></div>
+    <p id="dDesc" style="font-size:1.2rem"></p>
+    <canvas id="previewCanvas" width="480" height="240" style="margin:0 auto"></canvas>
+    <p>You have <b>3 minutes</b> and <b>💰<span id="budgetShow"></span> coins</b> to protect it.</p>
+    <button class="green" id="prepBtn">⏱️ Start Preparing!</button>
+  </div>
+</div>
+
+<!-- PREP -->
+<div class="screen" id="s-prep">
+  <div class="card">
+    <div class="bar">
+      <span id="timer">3:00</span>
+      <span class="pill" id="prepTitle"></span>
+      <span class="pill">💰 <span id="coins"></span> coins left</span>
+    </div>
+    <div class="bar" style="margin:10px 0">
+      <b>Safety meter:</b><div class="meter"><div id="meterFill"></div></div><b id="meterLbl"></b>
+    </div>
+    <div class="items" id="itemGrid"></div>
+    <div class="row"><button class="green" id="doneBtn">✅ I'm ready — unleash it!</button></div>
+  </div>
+</div>
+
+<!-- DISASTER -->
+<div class="screen" id="s-sim">
+  <div class="card center">
+    <h2 id="simTitle"></h2>
+    <canvas id="simCanvas" width="720" height="420" style="margin:0 auto"></canvas>
+    <div id="simLegend" class="legend"></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="s-result">
+  <div class="card center">
+    <div class="result-emoji" id="resEmoji"></div>
+    <h2 id="resTitle" style="font-size:2.4rem"></h2>
+    <p>Building strength: <b id="resStr"></b> &nbsp;|&nbsp; Needed: <b id="resNeed"></b></p>
+    <ul class="why" id="resWhy"></ul>
+    <p><span class="pill"><span class="lv"></span> · Score: <span class="scr"></span> ⭐</span></p>
+    <div class="row"><button class="green" id="againBtn">➜ Next building!</button></div>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div class="screen" id="s-over">
+  <div class="card center">
+    <div class="result-emoji">🏁</div>
+    <h2 style="font-size:2.3rem">Game Over!</h2>
+    <p style="font-size:1.4rem">You built <b id="finalScore"></b> surviving building<span id="finalS">s</span>! ⭐</p>
+    <div id="saveBox">
+      <p>Enter your name for the leaderboard:</p>
+      <input id="nameIn" maxlength="12" placeholder="Your name" autocomplete="off">
+      <div class="row"><button class="green" id="saveBtn">🏆 Save my score</button></div>
+    </div>
+    <div class="row"><button class="blue" id="overAgain">🔁 Play again</button><button class="yellow" id="overBoard">🏆 Leaderboard</button></div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="screen" id="s-board">
+  <div class="card center">
+    <h2 style="font-size:2.2rem">🏆 High Scores 🏆</h2>
+    <table class="board" id="boardTable"></table>
+    <div class="row">
+      <button class="green" id="boardPlay">▶ Play</button>
+      <button class="blue" id="boardTitle">🏠 Title</button>
+      <button id="boardClear">🗑️ Clear</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const GW = 40, GH = 30, CELL = 16, DW = 640, DH = 480;
+
+/* ---------- DATA ---------- */
+const DIS = {
+  quake:    {name:'Earthquake',  emoji:'🫨', desc:'The ground shakes and rolls! Buildings that bend without breaking do best.', sky:['#ffd27f','#ff9a8b'], ground:'#8d6e63'},
+  hurricane:{name:'Hurricane',   emoji:'🌀', desc:'Howling winds and pounding rain for hours. Hold on to your roof!',          sky:['#6b7ea6','#2b3a55'], ground:'#4f8f5a'},
+  tornado:  {name:'Tornado',     emoji:'🌪️', desc:'A spinning funnel of wind is heading straight your way!',                    sky:['#8fa0a0','#3d4b4b'], ground:'#7a9a4a'},
+  flood:    {name:'Flood',       emoji:'🌊', desc:'Rivers overflow and water keeps rising around your building.',               sky:['#6dd5ed','#2193b0'], ground:'#6f9e5a'},
+  fire:     {name:'Wildfire',    emoji:'🔥', desc:'Flames race across the dry land. Embers fly through the air!',               sky:['#ff7e5f','#5a2a2a'], ground:'#8a6a3a'},
+  tsunami:  {name:'Tsunami',     emoji:'🌊', desc:'A giant wave is crashing toward the coast!',                                 sky:['#56ccf2','#2f80ed'], ground:'#e8d08a'},
+  blizzard: {name:'Blizzard',    emoji:'❄️', desc:'Freezing wind and heavy snow pile up on everything.',                        sky:['#e0eafc','#9fb6d6'], ground:'#f4f8ff'},
+  volcano:  {name:'Volcano Eruption', emoji:'🌋', desc:'Lava bombs and burning ash rain from the sky!',                         sky:['#7b3f8f','#3b2a5f'], ground:'#5a4a4a'},
+  bomb:     {name:'Bombing Raid', emoji:'💣', desc:'A war has reached your town! Bombs are falling from the sky. Thick, heavy walls matter most.', sky:['#8a8f98','#4a4038'], ground:'#6b6252'},
+  molasses: {name:'Molasses Flood', emoji:'🍯', desc:'A giant tank of sticky molasses burst open! A slow, heavy wave of goo is oozing your way. (This really happened in Boston in 1919!)', sky:['#ffe8b0','#e7b866'], ground:'#8a6a4a'},
+  gas:      {name:'Gas Explosion', emoji:'💥', desc:'A leaking gas line is about to blow up next door! BOOM and fire at the same time.', sky:['#9aa5b5','#5a5060'], ground:'#7a7568'}
+};
+const KEYS = Object.keys(DIS);
+const LOCS = {
+  quake:['🇯🇵 Tokyo, Japan','🇺🇸 San Francisco, USA','🇨🇱 Santiago, Chile'],
+  hurricane:['🇺🇸 Miami, Florida','🇨🇺 Havana, Cuba','🇵🇭 Manila, Philippines'],
+  tornado:['🇺🇸 Oklahoma City, USA','🇺🇸 Wichita, Kansas','🇦🇷 Córdoba, Argentina'],
+  flood:['🇳🇱 Rotterdam, Netherlands','🇧🇩 Dhaka, Bangladesh','🇺🇸 New Orleans, USA'],
+  fire:['🇦🇺 Sydney, Australia','🇺🇸 California Hills, USA','🇬🇷 Athens, Greece'],
+  tsunami:['🇮🇩 Banda Aceh, Indonesia','🇺🇸 Hilo, Hawaii','🇯🇵 Sendai, Japan'],
+  blizzard:['🇨🇦 Winnipeg, Canada','🇺🇸 Buffalo, New York','🇷🇺 Moscow, Russia'],
+  volcano:['🇮🇹 Naples, Italy','🇮🇸 Reykjavik, Iceland','🇮🇩 Yogyakarta, Indonesia'],
+  bomb:['🏙️ A Pretend War-Zone City','🏰 Old Castle Town, Europe','🌉 Harbor City in Wartime'],
+  molasses:['🇺🇸 Boston, Massachusetts','🍬 Sugar Factory Town','🇧🇷 Sugarcane Port, Brazil'],
+  gas:['🏭 Industrial Park, Texas','🇯🇵 Factory District, Osaka','🇩🇪 Old Town Gas Works, Germany']
+};
+// strength 0-10 against: quake,hurricane,tornado,flood,fire,tsunami,blizzard,volcano,bomb,molasses,gas
+const MATS = {
+  wood:   {name:'Wood',   emoji:'🪵', note:'Bendy in quakes, great in snow — but it burns!',        s:[7,4,2,3,1,2,6,3,2,4,1]},
+  cement: {name:'Cement', emoji:'⬜', note:'Tough all-rounder, fireproof and heavy.',               s:[4,7,6,6,8,6,6,6,7,6,6]},
+  steel:  {name:'Steel',  emoji:'🔩', note:'Flexes instead of snapping. Can rust in water.',        s:[8,6,5,4,4,5,7,5,5,5,4]},
+  stone:  {name:'Stone',  emoji:'🪨', note:'Super heavy & fireproof. Cracks in big shakes.',        s:[3,7,6,7,9,7,7,8,6,7,7]},
+  brick:  {name:'Brick',  emoji:'🧱', note:'Strong against fire and lava, but wobbles in quakes.',  s:[3,6,5,6,8,5,6,7,3,6,5]},
+  stucco: {name:'Stucco', emoji:'🟨', note:'Pretty and light, but not the toughest.',               s:[4,5,4,4,6,4,5,5,2,3,3]}
+};
+const MK = ['wood','cement','steel','stone','brick','stucco'];
+const DI = {}; KEYS.forEach((k,i)=>DI[k]=i);
+
+// [emoji, name, cost, description, {disaster: bonus}]
+const ITEMS = [
+  ['🏗️','Shear Walls',18,"Extra-stiff walls act like a rigid box, so the building can't twist or lean when the ground or wind pushes it sideways.",{quake:14,hurricane:6,tornado:5}],
+  ['🛞','Base Isolators',30,"Rubber-and-steel pads under the building let the ground slide back and forth while the building stays almost still.",{quake:22}],
+  ['🔗','Cross Bracing',15,"Steel X-shaped beams inside the walls turn a wobbly rectangle into a strong triangle shape that holds its form.",{quake:10,hurricane:6,tornado:6}],
+  ['⚓','Deep Foundation',22,"Long posts sunk far underground anchor your building so wind, waves and shaking can't lift or shift it.",{quake:8,hurricane:8,tornado:12,flood:8,tsunami:10}],
+  ['🪟','Storm Shutters',10,"Heavy covers over the windows stop flying junk from smashing them. Broken windows let wind inside to blow the roof off.",{hurricane:10,tornado:6}],
+  ['🏠','Hurricane Straps',12,"Metal straps tie the roof to the walls and walls to the foundation, so strong wind can't peel the roof off.",{hurricane:12,tornado:10}],
+  ['🕳️','Storm Cellar',20,"An underground room is out of the wind's path. Even if the top gets damaged, the people inside stay safe.",{tornado:16,hurricane:5}],
+  ['🌳','Windbreak Trees',10,"A row of trees slows and splits the wind before it hits your walls, and also blocks blowing snow.",{hurricane:6,tornado:5,blizzard:6}],
+  ['🛖','Low Rounded Roof',12,"A curved, low roof lets wind flow over it instead of catching it like a sail.",{hurricane:8,tornado:6,blizzard:4}],
+  ['🦺','Raised Stilts',20,"Lifting the building on tall posts lets water flow underneath instead of crashing into the walls.",{flood:18,tsunami:14,hurricane:4}],
+  ['👜','Sandbag Wall',8,"Stacked bags of sand form a heavy, cheap wall that soaks up and blocks rising water.",{flood:12,tsunami:4}],
+  ['🚰','Sump Pump',12,"A pump pushes water out of the lowest part of the building faster than it can seep in.",{flood:10}],
+  ['🧱','Flood Wall',20,"A tall concrete wall around the building keeps water and debris away from it.",{flood:14,tsunami:10}],
+  ['🌊','Wave Breaker',26,"Giant concrete blocks in front of the building break big waves into small ones and slow them down.",{tsunami:20,flood:6,hurricane:4}],
+  ['⛰️','Hill Mound',18,"Building on higher ground means water has to climb further to reach you, and it loses energy on the way.",{flood:8,tsunami:12}],
+  ['🧯','Sprinkler System',16,"When heat is detected, ceiling sprinklers spray water and put out small fires before they spread.",{fire:14}],
+  ['🛡️','Fireproof Roof',14,"A roof made of tile or metal won't catch fire from glowing embers or hot ash landing on it.",{fire:14,volcano:10}],
+  ['✂️','Cleared Firebreak',10,"A strip of bare dirt around the building leaves the fire no grass or bushes to burn its way across.",{fire:14,volcano:4}],
+  ['🚒','Water Tank',16,"Your own big tank of water means firefighters (and sprinklers) never run out, even if the town supply fails.",{fire:10,volcano:4}],
+  ['🧤','Fire-Resistant Paint',8,"A special coating swells up when hot and forms a shield that slows the flames from reaching the material underneath.",{fire:8}],
+  ['❄️','Heated Roof',14,"Warm wires in the roof melt snow as it lands, so it never builds up into a crushing weight.",{blizzard:14}],
+  ['⛰️','Steep Roof',12,"A sharply slanted roof makes snow and ash slide off by themselves before they get too heavy.",{blizzard:12,volcano:8}],
+  ['🧣','Extra Insulation',10,"Thick layers inside the walls keep heat in, so pipes don't freeze and burst and the building stays cozy.",{blizzard:10}],
+  ['🚜','Snow Plow Crew',12,"A team clears snow away from doors and walls so drifts can't push on the building or trap you.",{blizzard:8}],
+  ['🔥','Backup Generator',12,"If the power goes out, this keeps heaters, pumps and lights running.",{blizzard:8,hurricane:3,quake:2}],
+  ['🌋','Ash-Proof Roof',15,"A super-strong roof frame holds up under the heavy weight of wet volcanic ash without caving in.",{volcano:16}],
+  ['😷','Air Filters',8,"Filters keep the sharp, gritty ash out of the air inside so people and machines keep working.",{volcano:6}],
+  ['🛤️','Lava Channel',24,"A deep trench guides slow-moving lava around your building like a river going around a rock.",{volcano:20}],
+  ['🪖','Lava Bomb Shield',18,"A hard metal cover over the roof stops flying chunks of hot rock from punching through.",{volcano:14}],
+  ['📡','Early Warning Alarm',10,"A loud siren gives everyone extra time to get to safety. A small help against everything!",{quake:4,hurricane:4,tornado:4,flood:4,fire:4,tsunami:6,blizzard:3,volcano:5,bomb:5,molasses:3,gas:5}],
+  ['🧰','Emergency Kit',8,"Food, water, a flashlight and first-aid supplies make any disaster easier to survive.",{quake:3,hurricane:3,tornado:3,flood:3,fire:3,tsunami:3,blizzard:3,volcano:3,bomb:3,molasses:3,gas:3}],
+  ['🔧','Regular Inspections',10,"Fixing small cracks and rust early stops them from turning into big weak spots later.",{quake:5,hurricane:4,tornado:3,flood:3,fire:3,tsunami:3,blizzard:3,volcano:3}],
+  ['🪨','Reinforced Concrete',20,"Steel bars hidden inside the concrete give it both crushing strength and stretching strength.",{quake:8,hurricane:6,tornado:6,flood:5,fire:8,tsunami:8,blizzard:4,volcano:6,bomb:10,molasses:6,gas:8}],
+  ['🧲','Flexible Pipes',8,"Pipes that bend instead of snapping keep water and gas from leaking after the ground moves.",{quake:6,flood:2}],
+  ['🛑','Heavy Roof Beams',12,"Thicker roof beams can hold up heavy loads like snow, ash and strong winds pulling upward.",{blizzard:8,volcano:8,tornado:4,hurricane:4}],
+  ['🏔️','Retaining Wall',14,"A strong wall holds back the soil so the ground around your building doesn't slump or slide.",{quake:6,flood:6,volcano:4,tsunami:5}],
+  ['🌱','Green Roof',10,"Plants on the roof soak up rain and cool the building. A small help!",{flood:3,hurricane:2}],
+  ['🕳️','Bomb Shelter',26,"A deep, thick concrete bunker absorbs shockwaves and protects the building's core from direct blasts.",{bomb:22,gas:8}],
+  ['🛡️','Blast Walls',20,"Extra-thick walls soak up and bounce back shockwaves so glass and debris don't fly around.",{bomb:16,gas:14}],
+  ['🕸️','Camouflage Net',8,"Netting and paint make your building harder to spot from above. What can't be seen is harder to hit!",{bomb:8}],
+  ['🚨','Air Raid Siren',10,"Warns everyone early so they reach safe rooms before the danger arrives.",{bomb:8,gas:6}],
+  ['🪟','Shatterproof Windows',12,"Glass with a plastic layer sticks together when hit, instead of turning into sharp flying pieces.",{bomb:8,gas:10,tornado:3}],
+  ['🧱','Sticky Barrier Wall',20,"A curved wall splits the thick molasses wave and sends it around both sides of your building.",{molasses:18,flood:6}],
+  ['🪜','Second-Floor Entrance',12,"Putting doors and important stuff up high keeps the sticky goo from flowing inside.",{molasses:10,flood:6,tsunami:4}],
+  ['🍯','Molasses Diversion Ditch',16,"A wide trench catches the slow wave and channels it away from your building.",{molasses:16,flood:6}],
+  ['🔩','Extra-Thick Foundation Bolts',14,"Big steel bolts hold the building tightly to its base so a heavy push from a wave can't slide it away.",{molasses:12,tsunami:6,hurricane:4}],
+  ['🔥','Gas Detectors',12,"Sensors beep when they sniff a gas leak, so it gets fixed before a spark can ignite it.",{gas:16}],
+  ['🚧','Safety Distance Buffer',14,"An empty zone around the building means less of the blast and heat can reach the walls.",{gas:12,fire:6,bomb:6}],
+  ['🧯','Fire Doors',10,"Special doors slam shut to keep flames and smoke from racing through the building.",{gas:8,fire:6}],
+  // silly decoys
+  ['🛝','Giant Slide',12,"It's super fun to ride, but a slide doesn't hold anything up or keep anything out.",{}],
+  ['🎈','1000 Balloons',10,"Pretty and colorful, but balloons weigh nothing and pop easily. No protection at all!",{}],
+  ['🦆','Rubber Duck Army',6,"They look adorable and cheer everyone up, but ducks can't stop a disaster.",{}],
+  ['🎪','Bouncy Castle',14,"Bounce bounce bounce! It's great for parties, but it won't save your building.",{}],
+  ['🍰','Cake Fort',9,"Delicious! But cake is soft and gets soggy and melty, so it's no use against disasters.",{}]
+].map((a,i)=>({id:i,e:a[0],name:a[1],cost:a[2],desc:a[3],fx:a[4]}));
+
+const BUDGET = 250, PREP_SECS = 180;
+
+
+/* ---------- SOUND (all synthesized with WebAudio, no files needed) ---------- */
+let AC=null, OUT=null, bus=null, noiseBuf=null, muted=false;
+try{muted=localStorage.getItem('dbMute')==='1'}catch(e){}
+function ac(){
+  if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null} }
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function nbuf(){
+  if(!noiseBuf){ noiseBuf=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1; }
+  return noiseBuf;
+}
+function stopSound(){
+  if(bus&&AC){ const b=bus; b.gain.setTargetAtTime(0,AC.currentTime,.05); setTimeout(()=>{try{b.disconnect()}catch(e){}},500); }
+  bus=null; OUT=null;
+}
+function newBus(){
+  if(!ac()||muted) return false;
+  stopSound(); bus=AC.createGain(); bus.gain.value=.8; bus.connect(AC.destination); OUT=bus; return true;
+}
+// noise burst through a filter
+function N(o){
+  if(!OUT) return;
+  o=Object.assign({t:0,d:1,type:'lowpass',f:500,f2:null,q:1,g:.3,a:.1,r:.2},o);
+  const t0=AC.currentTime+o.t, s=AC.createBufferSource(); s.buffer=nbuf(); s.loop=true;
+  const f=AC.createBiquadFilter(); f.type=o.type; f.Q.value=o.q; f.frequency.setValueAtTime(o.f,t0);
+  if(o.f2) f.frequency.linearRampToValueAtTime(o.f2,t0+o.d);
+  const g=AC.createGain(); g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(o.g,t0+o.a);
+  g.gain.setValueAtTime(o.g,t0+Math.max(o.a,o.d-o.r)); g.gain.linearRampToValueAtTime(0,t0+o.d);
+  s.connect(f); f.connect(g); g.connect(OUT); s.start(t0,Math.random()); s.stop(t0+o.d+.05);
+}
+// tone (optionally sliding pitch)
+function T(o){
+  if(!OUT) return;
+  o=Object.assign({t:0,d:.3,type:'sine',f:440,f2:null,g:.3,a:.01},o);
+  const t0=AC.currentTime+o.t, ose=AC.createOscillator(); ose.type=o.type;
+  ose.frequency.setValueAtTime(o.f,t0); if(o.f2) ose.frequency.exponentialRampToValueAtTime(o.f2,t0+o.d);
+  const g=AC.createGain(); g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(o.g,t0+o.a);
+  g.gain.exponentialRampToValueAtTime(.0001,t0+o.d);
+  ose.connect(g); g.connect(OUT); ose.start(t0); ose.stop(t0+o.d+.05);
+}
+const rr=(a,b)=>a+Math.random()*(b-a);
+const BOOM=(t,g=1)=>{ T({t,d:1.2,f:110,f2:28,g}); N({t,d:1.1,f:1800,f2:120,g:g*.9,a:.01,r:1}); };
+const CRASH=t=>{ N({t,d:1.5,f:2600,f2:250,g:.9,a:.01,r:1.2}); for(let i=0;i<14;i++) N({t:t+rr(0,1.1),d:.07,type:'bandpass',f:rr(300,1800),q:2,g:rr(.3,.7),a:.005,r:.05}); T({t,d:.6,f:90,f2:35,g:.7}); };
+const SFX = {
+  quake(){ N({d:5.2,f:90,g:.9,a:.4,r:.8}); N({d:5.2,type:'bandpass',f:220,q:.8,g:.25,a:.6});
+    for(let i=0;i<16;i++) T({t:rr(.2,4.8),d:.3,f:rr(70,110),f2:30,g:.45}); },
+  hurricane(){ N({d:5.2,type:'bandpass',f:400,f2:950,q:2,g:.55,a:1.5,r:1}); N({d:5.2,type:'highpass',f:3000,g:.22,a:.6});
+    N({t:1.4,d:1.6,f:140,g:.8,a:.05,r:1.3}); N({t:3.6,d:1.6,f:120,g:.8,a:.05,r:1.3}); },
+  tornado(){ N({d:5.2,type:'bandpass',f:250,f2:700,q:6,g:.6,a:2,r:1}); N({d:5.2,f:160,g:.5,a:1.2});
+    T({d:5.2,type:'sawtooth',f:70,f2:120,g:.1,a:1.5});
+    for(let i=0;i<20;i++) N({t:rr(1.8,5),d:.07,type:'bandpass',f:rr(500,2500),q:3,g:rr(.2,.5),a:.005,r:.05}); },
+  flood(){ N({d:5.2,f:700,g:.45,a:.8}); N({d:5.2,type:'bandpass',f:1600,g:.12,a:.5});
+    for(let i=0;i<40;i++){ const f=rr(250,800); T({t:rr(0,5),d:.09,f:f,f2:f*1.6,g:.09}); }
+    N({t:2,d:3,f:200,g:.6,a:1.5,r:1}); },
+  fire(){ N({d:5.2,f:300,g:.5,a:.6}); N({t:.4,d:1.2,type:'bandpass',f:400,f2:1800,q:1.5,g:.35,a:.4});
+    for(let i=0;i<110;i++) N({t:rr(0,5.1),d:rr(.03,.09),type:'highpass',f:rr(1500,4500),g:rr(.25,.7),a:.002,r:.03}); },
+  tsunami(){ N({d:5.2,f:100,g:.8,a:2.4,r:1.2}); N({t:2.2,d:2.6,f:1800,f2:150,g:.95,a:.6,r:1.5});
+    N({t:2.4,d:2,type:'highpass',f:2000,g:.3,a:.4,r:1.2}); T({t:2.3,d:2,f:80,f2:30,g:.6}); },
+  blizzard(){ N({d:5.2,type:'bandpass',f:900,f2:1500,q:4,g:.4,a:1}); N({t:.8,d:4.4,type:'bandpass',f:650,q:9,g:.2,a:1.2});
+    N({t:1.2,d:4,type:'bandpass',f:1900,q:5,g:.15,a:1}); },
+  volcano(){ BOOM(.2,1.1); N({d:5.2,f:120,g:.8,a:.5}); N({d:5.2,type:'highpass',f:4000,g:.1,a:1});
+    BOOM(1.5,.8); BOOM(2.7,.9); BOOM(3.9,.7);
+    for(let i=0;i<10;i++) T({t:rr(.5,5),d:.15,type:'square',f:rr(600,1200),f2:100,g:.05}); },
+  bomb(){ for(let i=0;i<5;i++){ const t=.3+i*.95; T({t,d:.85,f:2000,f2:350,g:.16}); BOOM(t+.82,1); } },
+  molasses(){ N({d:5.2,f:120,g:.7,a:1.5}); N({d:5.2,f:420,g:.18,a:1});
+    for(let i=0;i<30;i++){ const f=rr(110,260); T({t:rr(0,5),d:rr(.1,.25),f:f,f2:f*1.9,g:.28}); } },
+  gas(){ N({d:1.8,type:'highpass',f:3500,g:.3,a:.8,r:.1}); [.3,.9,1.5].forEach(t=>T({t,d:.12,type:'square',f:1200,g:.08}));
+    BOOM(1.82,1.2); N({t:2.2,d:3,f:300,g:.5,a:.4});
+    for(let i=0;i<70;i++) N({t:rr(2.2,5.1),d:rr(.03,.08),type:'highpass',f:rr(1500,4500),g:rr(.25,.6),a:.002,r:.03}); }
+};
+function playDisaster(type,ok,dur){
+  if(!newBus()) return;
+  SFX[type](); if(!ok) CRASH(COLLAPSE[type]*dur);
+}
+function jingle(ok){
+  if(!newBus()) return;
+  if(ok){ [523,659,784,1047,784,1047].forEach((f,i)=>T({t:i*.13,d:.3,type:'triangle',f:f,g:.35})); T({t:.8,d:.8,type:'triangle',f:1319,g:.3}); }
+  else { [392,370,349,330].forEach((f,i)=>T({t:i*.32,d:.5,type:'sawtooth',f:f,g:.15})); T({t:1.3,d:1,type:'sawtooth',f:165,g:.18}); }
+}
+function alertSound(){ if(!newBus()) return; for(let i=0;i<3;i++){ T({t:i*.5,d:.22,type:'square',f:880,g:.12}); T({t:i*.5+.24,d:.22,type:'square',f:660,g:.12}); } }
+function blip(f=660,f2=990){
+  if(muted||!ac()) return;
+  const g=AC.createGain(); g.gain.value=.8; g.connect(AC.destination); const prev=OUT; OUT=g; T({d:.09,f:f,f2:f2,g:.18,type:'triangle'}); OUT=prev;
+}
+document.addEventListener('click',e=>{ if(e.target.closest('button,.mat,.item')&&e.target.id!=='muteBtn') blip(); },true);
+function setMute(m){ muted=m; try{localStorage.setItem('dbMute',m?'1':'0')}catch(e){} $('#muteBtn').textContent=m?'🔇':'🔊'; if(m) stopSound(); }
+
+/* ---------- STATE ---------- */
+const G = {
+  cells: Array.from({length:GH},()=>Array(GW).fill(0)), hist: [],
+  mats: [], round: 1, score: 0, best: 0,
+  dis: null, loc: '', picked: new Set(), deadline: 0, timerId: null, luck: 0
+};
+G.lives = 3;
+const LS_BOARD='dbBoard';
+function loadBoard(){ try{ const b=JSON.parse(localStorage.getItem(LS_BOARD)||'[]'); return Array.isArray(b)?b:[]; }catch(e){return []} }
+function saveBoard(b){ try{localStorage.setItem(LS_BOARD,JSON.stringify(b))}catch(e){} }
+function refreshBest(){ const b=loadBoard(); G.best=b.length?b[0].score:0; $('#best').textContent=G.best; }
+refreshBest();
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $('#s-'+id).classList.add('active');
+  document.querySelectorAll('.rnd').forEach(e=>e.textContent=G.round);
+  document.querySelectorAll('.scr').forEach(e=>e.textContent=G.score);
+  document.querySelectorAll('.lv').forEach(e=>e.textContent='❤️'.repeat(Math.max(0,G.lives))+'🖤'.repeat(3-Math.max(0,G.lives)));
+  window.scrollTo(0,0);
+}
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+
+/* ---------- MATERIAL TEXTURES ---------- */
+const TILE=128, PAT={};
+function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function grain(c,amt,R){ const im=c.getImageData(0,0,TILE,TILE), d=im.data; for(let i=0;i<d.length;i+=4){ const n=(R()-.5)*amt; d[i]+=n; d[i+1]+=n; d[i+2]+=n; } c.putImageData(im,0,0); }
+// draw a shape so it also wraps around tile edges (keeps the pattern seamless)
+function wrap(fn,x,y){ for(const dx of [-TILE,0,TILE]) for(const dy of [-TILE,0,TILE]) fn(x+dx,y+dy); }
+function blob(c,x,y,r,col){ wrap((X,Y)=>{ const g=c.createRadialGradient(X,Y,0,X,Y,r); g.addColorStop(0,col); g.addColorStop(1,'rgba(0,0,0,0)'); c.fillStyle=g; c.fillRect(X-r,Y-r,r*2,r*2); },x,y); }
+const TILES = {
+  wood(c,R){
+    for(let i=0;i<8;i++){
+      const y=i*16; c.fillStyle='hsl('+(26+R()*10)+' '+(42+R()*18)+'% '+(36+R()*16)+'%)'; c.fillRect(0,y,TILE,16);
+      for(let g=0;g<7;g++){ const y0=y+2+R()*12, amp=.6+R()*1.4, k=1+Math.floor(R()*3), ph=R()*6.28;
+        c.strokeStyle='rgba(58,28,8,'+(.12+R()*.25)+')'; c.lineWidth=.6+R()*.9; c.beginPath();
+        for(let x=0;x<=TILE;x+=4){ const yy=y0+amp*Math.sin(Math.PI*2*k*x/TILE+ph); x?c.lineTo(x,yy):c.moveTo(x,yy); } c.stroke(); }
+      if(R()<.4){ const kx=24+R()*80, ky=y+8; for(let r=4;r>=1;r--){ c.fillStyle='rgba(60,28,8,'+(.25+.15*(4-r))+')'; c.beginPath(); c.ellipse(kx,ky,r*1.9,r*1.1,0,0,7); c.fill(); } }
+      const jx=20+R()*88; c.fillStyle='rgba(35,16,4,.55)'; c.fillRect(jx,y,1.6,16);
+      c.fillStyle='rgba(30,14,4,.65)'; c.fillRect(0,y+14.6,TILE,1.6); c.fillStyle='rgba(255,230,180,.14)'; c.fillRect(0,y,TILE,1.2);
+    }
+    grain(c,14,R);
+  },
+  brick(c,R){
+    c.fillStyle='#cbc2b2'; c.fillRect(0,0,TILE,TILE); grain(c,30,R);
+    const cols=[]; for(let r=0;r<8;r++){ cols[r]=[]; for(let i=0;i<4;i++) cols[r][i]='hsl('+(6+R()*14)+' '+(50+R()*20)+'% '+(34+R()*15)+'%)'; }
+    for(let r=0;r<8;r++){ const off=r%2?16:0;
+      for(let bx=-32;bx<TILE+32;bx+=32){ const x=bx+off, idx=(((Math.floor((x+64)/32))%4)+4)%4, y=r*16+1.5;
+        c.fillStyle=cols[r][idx]; c.fillRect(x,y,29,13);
+        c.fillStyle='rgba(255,220,190,.22)'; c.fillRect(x,y,29,1.4); c.fillStyle='rgba(40,10,0,.3)'; c.fillRect(x,y+11.6,29,1.4);
+        for(let d=0;d<7;d++){ c.fillStyle='rgba(50,15,0,'+(.1+R()*.2)+')'; c.fillRect(x+R()*27,y+R()*11,1+R()*1.6,1+R()*1.2); } }
+    }
+    grain(c,18,R);
+  },
+  stone(c,R){
+    c.fillStyle='#48433d'; c.fillRect(0,0,TILE,TILE);
+    const H=[36,28,32,32], W=[[46,40,42],[30,50,26,22],[38,34,56],[26,44,30,28]]; let y=0;
+    H.forEach((h,ri)=>{ let x=0; W[ri].forEach(w=>{
+      const l=46+R()*18, g=c.createLinearGradient(x,y,x+w,y+h); g.addColorStop(0,'hsl(34 7% '+(l+9)+'%)'); g.addColorStop(1,'hsl(30 6% '+(l-9)+'%)');
+      c.fillStyle=g; c.beginPath(); c.roundRect(x+1.5,y+1.5,w-3,h-3,4); c.fill();
+      c.strokeStyle='rgba(255,255,255,.18)'; c.lineWidth=1; c.beginPath(); c.moveTo(x+3,y+h-3); c.lineTo(x+3,y+3); c.lineTo(x+w-3,y+3); c.stroke();
+      for(let d=0;d<10;d++){ c.fillStyle=R()<.5?'rgba(255,255,255,.12)':'rgba(0,0,0,.14)'; c.beginPath(); c.arc(x+3+R()*(w-6),y+3+R()*(h-6),.6+R()*1.6,0,7); c.fill(); }
+      if(R()<.4){ c.strokeStyle='rgba(20,15,10,.4)'; c.lineWidth=.8; c.beginPath(); const sx=x+6+R()*(w-12); c.moveTo(sx,y+3); c.lineTo(sx+R()*8-4,y+h*.5); c.lineTo(sx+R()*10-5,y+h-4); c.stroke(); }
+      x+=w; }); y+=h; });
+    grain(c,22,R);
+  },
+  cement(c,R){
+    c.fillStyle='#a8acb0'; c.fillRect(0,0,TILE,TILE);
+    for(let i=0;i<26;i++) blob(c,R()*TILE,R()*TILE,14+R()*26,R()<.5?'rgba(255,255,255,.10)':'rgba(40,40,45,.09)');
+    for(let i=0;i<70;i++){ const x=R()*TILE,y=R()*TILE,r=.5+R()*1.3; wrap((X,Y)=>{ c.fillStyle='rgba(50,50,55,'+(.25+R()*.2)+')'; c.beginPath(); c.arc(X,Y,r,0,7); c.fill(); },x,y); }
+    c.fillStyle='rgba(45,45,52,.55)'; [0,64].forEach(v=>{ c.fillRect(v,0,1.6,TILE); c.fillRect(0,v,TILE,1.6); });
+    c.fillStyle='rgba(255,255,255,.25)'; [0,64].forEach(v=>{ c.fillRect(v+1.6,0,1,TILE); c.fillRect(0,v+1.6,TILE,1); });
+    [0,64].forEach(px=>[0,64].forEach(py=>{ const X=px+16,Y=py+16; c.fillStyle='rgba(255,255,255,.3)'; c.beginPath(); c.arc(X,Y+.8,2.8,0,7); c.fill(); c.fillStyle='rgba(30,30,36,.7)'; c.beginPath(); c.arc(X,Y,2.4,0,7); c.fill(); }));
+    grain(c,20,R);
+  },
+  steel(c,R){
+    for(let px=0;px<2;px++)for(let py=0;py<2;py++){
+      const X=px*64,Y=py*64,g=c.createLinearGradient(0,Y,0,Y+64); g.addColorStop(0,'#c8d2dc'); g.addColorStop(.5,'#8a9bab'); g.addColorStop(1,'#b6c3cf');
+      c.fillStyle=g; c.fillRect(X,Y,64,64);
+      for(let i=0;i<70;i++){ c.fillStyle=R()<.5?'rgba(255,255,255,'+(.05+R()*.1)+')':'rgba(20,35,50,'+(.05+R()*.1)+')'; c.fillRect(X+R()*50,Y+R()*64,14+R()*40,.7); }
+      c.fillStyle='rgba(20,35,50,.65)'; c.fillRect(X,Y,64,1.6); c.fillRect(X,Y,1.6,64); c.fillStyle='rgba(255,255,255,.35)'; c.fillRect(X+1.6,Y+1.6,62,1); c.fillRect(X+1.6,Y+1.6,1,62);
+      [[7,7],[57,7],[7,57],[57,57]].forEach(q=>{ const bx=X+q[0],by=Y+q[1], rg=c.createRadialGradient(bx-1,by-1,.3,bx,by,4); rg.addColorStop(0,'#ffffff'); rg.addColorStop(.6,'#7c8c9b'); rg.addColorStop(1,'#3a4856');
+        c.fillStyle='rgba(0,0,0,.3)'; c.beginPath(); c.arc(bx+.8,by+1,4,0,7); c.fill(); c.fillStyle=rg; c.beginPath(); c.arc(bx,by,3.6,0,7); c.fill(); });
+    }
+    grain(c,10,R);
+  },
+  stucco(c,R){
+    c.fillStyle='hsl(40 52% 73%)'; c.fillRect(0,0,TILE,TILE);
+    for(let i=0;i<24;i++) blob(c,R()*TILE,R()*TILE,16+R()*28,R()<.5?'rgba(255,248,225,.16)':'rgba(150,110,50,.10)');
+    for(let i=0;i<9;i++){ const x=R()*TILE,y=R()*TILE,r=14+R()*26,a=R()*6; wrap((X,Y)=>{ c.strokeStyle='rgba(255,255,255,.13)'; c.lineWidth=2+R()*2; c.beginPath(); c.arc(X,Y,r,a,a+1.4); c.stroke(); },x,y); }
+    for(let i=0;i<650;i++){ const x=R()*TILE,y=R()*TILE,r=.7+R()*1.9;
+      wrap((X,Y)=>{ c.fillStyle='rgba(110,78,30,.28)'; c.beginPath(); c.arc(X+.9,Y+.9,r,0,7); c.fill(); c.fillStyle='rgba(255,250,232,.42)'; c.beginPath(); c.arc(X,Y,r,0,7); c.fill(); },x,y); }
+    grain(c,16,R);
+  }
+};
+function getPat(mat){
+  if(PAT[mat]!==undefined) return PAT[mat];
+  const fn=TILES[mat]; if(!fn){ PAT[mat]=null; return null; }
+  const cv=document.createElement('canvas'); cv.width=cv.height=TILE; const cx=cv.getContext('2d',{willReadFrequently:true});
+  fn(cx,rng(mat.length*977+mat.charCodeAt(0)));
+  PAT[mat]=cx.createPattern(cv,'repeat'); return PAT[mat];
+}
+// ox,oy = where this piece originally sat, so the texture stays continuous (and travels with falling pieces)
+function drawCell(c, mat, x, y, s, seed, ox, oy, edge){
+  const pat=getPat(mat);
+  c.save(); c.translate(x,y);
+  if(pat){ pat.setTransform({a:1,b:0,c:0,d:1,e:-(ox===undefined?x:ox),f:-(oy===undefined?y:oy)}); c.fillStyle=pat; } else c.fillStyle=mat;
+  c.fillRect(0,0,s,s);
+  if(edge){ c.strokeStyle='rgba(25,12,35,.5)'; c.lineWidth=1; c.strokeRect(.5,.5,s-1,s-1); }
+  c.restore();
+}
+function matAt(x,y){ return G.mats.length ? G.mats[((x+y)>>2) % G.mats.length] : 'wood'; }
+
+/* ---------- DRAW SCREEN (free-form) ---------- */
+const dc = $('#drawCanvas'), dx = dc.getContext('2d');
+const ink = document.createElement('canvas'); ink.width=DW; ink.height=DH;
+const ix = ink.getContext('2d', {willReadFrequently:true});
+const PALETTE = ['#ff4fa3','#ff8a3d','#ffd93d','#3ddc84','#28b5ff','#8a5cff','#ffffff','#2b1b5a'];
+let tool='pen', brush=14, color=PALETTE[0], painting=false, lastPt=null;
+
+function render(){
+  const g = dx.createLinearGradient(0,0,0,DH); g.addColorStop(0,'#c7f0ff'); g.addColorStop(1,'#fff6d6');
+  dx.fillStyle=g; dx.fillRect(0,0,DW,DH);
+  dx.fillStyle='#8fd66b'; dx.fillRect(0,DH-30,DW,30);           // ground strip
+  dx.fillStyle='rgba(43,27,90,.5)'; dx.font='bold 14px sans-serif'; dx.fillText('ground',8,DH-10);
+  dx.drawImage(ink,0,0);
+}
+function pushHist(){ G.hist.push(ix.getImageData(0,0,DW,DH)); if(G.hist.length>25) G.hist.shift(); }
+function pt(e){ const r=dc.getBoundingClientRect(); return [(e.clientX-r.left)*DW/r.width,(e.clientY-r.top)*DH/r.height]; }
+
+function stroke(a,b){
+  ix.lineCap='round'; ix.lineJoin='round'; ix.lineWidth=brush;
+  if(tool==='erase'){ ix.globalCompositeOperation='destination-out'; ix.strokeStyle='#000'; }
+  else { ix.globalCompositeOperation='source-over'; ix.strokeStyle=color; }
+  ix.beginPath(); ix.moveTo(a[0],a[1]); ix.lineTo(b[0]+.01,b[1]); ix.stroke();
+  ix.globalCompositeOperation='source-over';
+}
+// flood fill on the ink layer; refuses if the shape isn't closed (fill would leak off the canvas)
+function floodFill(px,py){
+  const img=ix.getImageData(0,0,DW,DH), d=img.data;
+  const x0=Math.floor(px), y0=Math.floor(py), idx=(x,y)=>(y*DW+x)*4;
+  if(x0<0||y0<0||x0>=DW||y0>=DH||d[idx(x0,y0)+3]>40) return 'solid';
+  const seen=new Uint8Array(DW*DH), stack=[x0,y0], out=[]; let leak=false;
+  while(stack.length){
+    const y=stack.pop(), x=stack.pop(), k=y*DW+x;
+    if(seen[k]||d[k*4+3]>40) continue; seen[k]=1; out.push(k);
+    if(x===0||y===0||x===DW-1||y===DH-1) leak=true;
+    if(x>0)stack.push(x-1,y); if(x<DW-1)stack.push(x+1,y); if(y>0)stack.push(x,y-1); if(y<DH-1)stack.push(x,y+1);
+  }
+  if(leak) return 'leak';
+  const c=color.replace('#',''), r=parseInt(c.substr(0,2),16), g=parseInt(c.substr(2,2),16), b=parseInt(c.substr(4,2),16);
+  out.forEach(k=>{ d[k*4]=r; d[k*4+1]=g; d[k*4+2]=b; d[k*4+3]=255; });
+  ix.putImageData(img,0,0); return 'ok';
+}
+// turn the drawing into the block grid used by the disaster scene
+function computeCells(){
+  const d=ix.getImageData(0,0,DW,DH).data; let n=0;
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    let hit=0;
+    for(let sy=0;sy<4;sy++)for(let sx=0;sx<4;sx++){
+      const X=x*CELL+sx*4+2, Y=y*CELL+sy*4+2; if(d[(Y*DW+X)*4+3]>128) hit++;
+    }
+    G.cells[y][x]= hit>=6 ? 1 : 0; n+=G.cells[y][x];
+  }
+  return n;
+}
+const countCells = () => G.cells.flat().filter(Boolean).length;
+// height on the old 12-row scale so the rules (tall = wobbly) stay the same
+function buildingHeight(){ let h=0; for(let y=0;y<GH;y++) if(G.cells[y].some(Boolean)) h++; return Math.max(1,Math.round(h*12/GH)); }
+function updateInfo(){
+  const n=computeCells();
+  $('#drawInfo').textContent = n<70 ? 'Keep drawing — make your building bigger! ✏️' : 'Building size: '+(n<200?'small':n<450?'medium':'big')+' · '+buildingHeight()+'/12 tall';
+}
+function setDrawingMsg(m){ $('#drawInfo').textContent=m; }
+
+dc.addEventListener('pointerdown',e=>{
+  const p=pt(e);
+  if(tool==='fill'){
+    pushHist(); const r=floodFill(p[0],p[1]);
+    if(r==='leak'){ G.hist.pop(); setDrawingMsg('⚠️ That shape has a gap! Close the outline first, then fill.'); }
+    else if(r==='solid'){ G.hist.pop(); setDrawingMsg('That spot is already drawn on. Click inside an empty closed shape.'); }
+    else { render(); updateInfo(); }
+    return;
+  }
+  pushHist(); painting=true; lastPt=p; dc.setPointerCapture(e.pointerId); stroke(p,p); render();
+});
+dc.addEventListener('pointermove',e=>{ if(!painting) return; const p=pt(e); stroke(lastPt,p); lastPt=p; render(); });
+const endStroke=()=>{ if(painting){ painting=false; updateInfo(); } };
+dc.addEventListener('pointerup',endStroke); dc.addEventListener('pointercancel',endStroke);
+
+document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>{
+  tool=b.dataset.tool; document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('sel',x===b));
+  dc.style.cursor = tool==='fill'?'copy':'crosshair';
+});
+document.querySelectorAll('.size').forEach(b=>b.onclick=()=>{
+  brush=+b.dataset.size; document.querySelectorAll('.size').forEach(x=>x.classList.toggle('sel',x===b));
+});
+PALETTE.forEach((c,i)=>{
+  const b=document.createElement('button'); b.className='sw'+(i===0?' sel':''); b.style.background=c; b.title='Color';
+  b.onclick=()=>{ color=c; document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('sel',x===b)); if(tool==='erase'){ document.querySelector('.tool[data-tool=pen]').click(); } };
+  $('#colorRow').appendChild(b);
+});
+$('#undoBtn').onclick=()=>{ const h=G.hist.pop(); if(h){ ix.putImageData(h,0,0); render(); updateInfo(); } };
+$('#clearBtn').onclick=()=>{ pushHist(); ix.clearRect(0,0,DW,DH); render(); updateInfo(); };
+// starter buildings: each press gives a different design (shuffled, no repeats until all have been shown)
+const GY=DH-30;                                   // ground line
+const pick=()=>rnd(PALETTE.slice(0,6));
+const rect=(c,x,y,w,h)=>{ ix.fillStyle=c; ix.fillRect(x,y,w,h); };
+const poly=(c,pts)=>{ ix.fillStyle=c; ix.beginPath(); pts.forEach((q,i)=>i?ix.lineTo(q[0],q[1]):ix.moveTo(q[0],q[1])); ix.closePath(); ix.fill(); };
+const disc=(c,x,y,r,a0=0,a1=Math.PI*2)=>{ ix.fillStyle=c; ix.beginPath(); ix.arc(x,y,r,a0,a1); ix.fill(); };
+const WIN='#28b5ff';
+const DESIGNS = {
+  'Cozy Cottage'(){ rect(pick(),190,GY-200,260,200); poly('#ff4fa3',[[165,GY-195],[320,GY-320],[475,GY-195]]);
+    rect(WIN,225,GY-150,60,60); rect(WIN,355,GY-150,60,60); rect('#8a5cff',295,GY-90,50,90); rect('#ff8a3d',390,GY-310,30,80); },
+  'Skyscraper'(){ const c=pick(); rect(c,250,GY-420,140,420); rect('#2b1b5a',300,GY-460,40,40);
+    for(let r=0;r<9;r++)for(let q=0;q<3;q++) rect(WIN,268+q*38,GY-395+r*42,24,26); },
+  'Castle'(){ rect('#8a5cff',150,GY-180,340,180); [150,300,450].forEach(x=>{ rect('#ffd93d',x-5,GY-260,50,260);
+      for(let i=0;i<3;i++) rect('#ffd93d',x-5+i*20,GY-285,12,28); }); rect('#2b1b5a',290,GY-110,60,110); disc('#2b1b5a',320,GY-110,30,Math.PI,0);
+    poly('#ff4fa3',[[135,GY-260],[175,GY-330],[215,GY-260]]); },
+  'Pagoda'(){ const c=pick(); [0,1,2,3].forEach(i=>{ const w=260-i*45, y=GY-i*95;
+      rect(c,320-w/2+15,y-70,w-30,70); poly('#ff4fa3',[[320-w/2-20,y-70],[320,y-105],[320+w/2+20,y-70]]); rect('#ffd93d',300,y-45,40,45); });
+    rect('#2b1b5a',318,GY-480,4,50); },
+  'Lighthouse'(){ poly('#ffffff',[[270,GY],[370,GY],[345,GY-330],[295,GY-330]]);
+    [0,1,2].forEach(i=>poly('#ff4fa3',[[270+i*22-0,GY-i*100],[370-i*22,GY-i*100],[368-i*22-8,GY-i*100-35],[272+i*22+8,GY-i*100-35]]));
+    rect('#ffd93d',290,GY-380,60,50); poly('#ff4fa3',[[280,GY-380],[320,GY-430],[360,GY-380]]); },
+  'Big Red Barn'(){ rect('#ff4f4f',130,GY-170,380,170); poly('#ff4f4f',[[130,GY-170],[200,GY-260],[440,GY-260],[510,GY-170]]);
+    rect('#ffffff',270,GY-130,100,130); ix.strokeStyle='#ff4f4f'; ix.lineWidth=8; ix.strokeRect(274,GY-126,92,122);
+    ix.beginPath(); ix.moveTo(274,GY-126); ix.lineTo(366,GY-4); ix.moveTo(366,GY-126); ix.lineTo(274,GY-4); ix.stroke();
+    rect('#ffffff',290,GY-235,60,40); },
+  'Apartment Block'(){ const c=pick(); rect(c,170,GY-300,300,300);
+    for(let r=0;r<5;r++)for(let q=0;q<5;q++) rect(r===4&&q===2?'#2b1b5a':WIN,195+q*56,GY-275+r*52,32,r===4?45:34); rect('#2b1b5a',160,GY-310,320,14); },
+  'A-Frame Cabin'(){ poly(pick(),[[150,GY],[320,GY-330],[490,GY]]); poly('#fff6d6',[[270,GY],[320,GY-100],[370,GY]]); rect(WIN,300,GY-220,40,40); },
+  'Stepped Pyramid'(){ const c=pick(); [0,1,2,3,4].forEach(i=>rect(i%2?'#ffd93d':c,110+i*35,GY-(i+1)*70,420-i*70,70)); rect('#2b1b5a',300,GY-70,40,70); },
+  'Mushroom House'(){ rect('#fff6d6',270,GY-170,100,170); disc('#ff4f4f',320,GY-170,150,Math.PI,0); rect('#ff4f4f',170,GY-172,300,6);
+    [[250,GY-250],[340,GY-290],[400,GY-230]].forEach(q=>disc('#ffffff',q[0],q[1],20)); rect('#8a5cff',298,GY-90,44,90); },
+  'Dome Tower'(){ rect(pick(),230,GY-260,180,260); disc('#ffd93d',320,GY-260,90,Math.PI,0); rect('#2b1b5a',316,GY-400,8,60);
+    rect(WIN,265,GY-200,40,50); rect(WIN,335,GY-200,40,50); rect('#8a5cff',300,GY-90,40,90); },
+  'Long Bunker'(){ rect('#8e959e',80,GY-130,480,130); rect('#5c5766',80,GY-150,480,25); for(let i=0;i<6;i++) rect('#ffd93d',110+i*75,GY-95,45,22); rect('#2b1b5a',290,GY-70,60,70); },
+  'Rocket Tower'(){ rect('#ffffff',280,GY-330,80,330); poly('#ff4f4f',[[280,GY-330],[320,GY-420],[360,GY-330]]);
+    poly('#ff4f4f',[[280,GY-90],[230,GY],[280,GY]]); poly('#ff4f4f',[[360,GY-90],[410,GY],[360,GY]]); disc(WIN,320,GY-250,28); disc('#ffd93d',320,GY-250,14); }
+};
+let bag=[], lastDesign='';
+$('#houseBtn').onclick=()=>{
+  if(!bag.length){ bag=Object.keys(DESIGNS).sort(()=>Math.random()-.5); if(bag[bag.length-1]===lastDesign) bag.unshift(bag.pop()); }
+  const name=bag.pop(); lastDesign=name;
+  pushHist(); ix.clearRect(0,0,DW,DH); DESIGNS[name](); render(); updateInfo();
+};
+$('#drawNext').onclick = ()=>{
+  const n=computeCells();
+  if(n<70){ setDrawingMsg('⚠️ Your building is too small! Draw a bigger one first.'); return; }
+  buildMatScreen(); show('mats');
+};
+function startGame(){ G.score=0; G.round=1; G.lives=3; newRound(); }
+$('#startBtn').onclick = startGame;
+$('#boardBtn').onclick = ()=>showBoard(-1);
+
+function newRound(){
+  G.cells.forEach(r=>r.fill(0)); G.mats=[]; G.picked=new Set(); G.hist=[];
+  ix.clearRect(0,0,DW,DH); render(); updateInfo(); show('draw');
+}
+
+/* ---------- MATERIALS ---------- */
+function buildMatScreen(){
+  const grid = $('#matGrid'); grid.innerHTML='';
+  MK.forEach(k=>{
+    const m = MATS[k], d = document.createElement('div');
+    d.className='mat'+(G.mats.includes(k)?' sel':'');
+    d.innerHTML='<canvas width="64" height="64"></canvas><div><b>'+m.emoji+' '+m.name+'</b><small>'+m.note+'</small></div>';
+    const cx = d.querySelector('canvas').getContext('2d');
+    drawCell(cx,k,0,0,64,0,0,0);
+    d.onclick=()=>{
+      const i = G.mats.indexOf(k);
+      if(i>=0) G.mats.splice(i,1); else if(G.mats.length<4) G.mats.push(k);
+      buildMatScreen();
+    };
+    grid.appendChild(d);
+  });
+  $('#matCount').textContent=G.mats.length;
+  $('#matNext').disabled = G.mats.length<2;
+}
+$('#matBack').onclick=()=>show('draw');
+$('#matNext').onclick=()=>{
+  G.dis = rnd(KEYS); G.loc = rnd(LOCS[G.dis]); G.picked=new Set();
+  const d = DIS[G.dis];
+  $('#locName').textContent='📍 '+G.loc;
+  $('#dEmoji').textContent=d.emoji; $('#dName').textContent=d.name+' incoming!';
+  $('#dDesc').textContent=d.desc; $('#budgetShow').textContent=BUDGET;
+  drawScene($('#previewCanvas'),G.dis,0,{preview:true});
+  show('reveal'); alertSound();
+};
+
+/* ---------- STRENGTH MODEL ---------- */
+function needed(){ return Math.min(115, 80 + G.round*4); }
+function baseStrength(){
+  const i = DI[G.dis];
+  let avg = G.mats.reduce((s,k)=>s+MATS[k].s[i],0)/G.mats.length;
+  return avg*10;
+}
+function sizeMod(){
+  const h = buildingHeight(), t = G.dis;
+  if(['quake','hurricane','tornado'].includes(t)){ if(h>=10) return -10; if(h>=8) return -6; if(h<=4) return 4; }
+  if(t==='bomb'||t==='gas'){ if(h<=4) return 3; if(h>=9) return -4; }
+  if(t==='molasses'){ if(h<=3) return -3; if(h>=6) return 3; }
+  if(t==='flood'||t==='tsunami'){ if(h<=3) return -3; if(h>=7) return 3; }
+  return 0;
+}
+function itemBonus(){
+  let b=0; G.picked.forEach(id=>{ b += ITEMS[id].fx[G.dis]||0; }); return b;
+}
+const strength = (luck=0) => baseStrength()+sizeMod()+itemBonus()+luck;
+const spent = () => [...G.picked].reduce((s,id)=>s+ITEMS[id].cost,0);
+
+/* ---------- PREP ---------- */
+$('#prepBtn').onclick = ()=>{
+  G.picked=new Set(); G.luck = Math.random()*12-6; G.fog = Math.random()*24-12;
+  $('#prepTitle').textContent=DIS[G.dis].emoji+' '+DIS[G.dis].name+' · '+G.loc;
+  buildItems(); updatePrep(); show('prep');
+  G.deadline = Date.now()+PREP_SECS*1000;
+  clearInterval(G.timerId); tick(); G.timerId=setInterval(tick,200);
+};
+function tick(){
+  const left = Math.max(0,Math.ceil((G.deadline-Date.now())/1000));
+  $('#timer').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
+  $('#timer').classList.toggle('low',left<=20);
+  if(left<=10&&left>0&&left!==G.lastLeft){ blip(1000,1000); }
+  G.lastLeft=left;
+  if(left<=0) unleash();
+}
+function buildItems(){
+  const grid=$('#itemGrid'); grid.innerHTML='';
+  ITEMS.forEach(it=>{
+    const d=document.createElement('div'); d.className='item'; d.dataset.id=it.id;
+    d.innerHTML='<span class="c">💰'+it.cost+'</span><div class="e">'+it.e+'</div><b>'+it.name+'</b><small>'+it.desc+'</small><div class="help"></div>';
+    d.onclick=()=>{
+      if(G.picked.has(it.id)) G.picked.delete(it.id);
+      else if(spent()+it.cost<=BUDGET) G.picked.add(it.id);
+      updatePrep();
+    };
+    grid.appendChild(d);
+  });
+}
+function updatePrep(){
+  const left = BUDGET-spent();
+  $('#coins').textContent=left;
+  document.querySelectorAll('.item').forEach(d=>{
+    const it=ITEMS[+d.dataset.id], sel=G.picked.has(it.id);
+    d.classList.toggle('sel',sel);
+    d.classList.toggle('no',!sel && it.cost>left);
+    const b=it.fx[G.dis]||0, hl=d.querySelector('.help');
+    hl.className='help '+(b>=12?'big':b>=6?'mid':b>0?'low':'none');
+    hl.textContent=b>=12?'🌟 Big help vs '+DIS[G.dis].name+' (+'+b+')':b>=6?'👍 Good help vs '+DIS[G.dis].name+' (+'+b+')':b>0?'🙂 Small help here (+'+b+')':'🚫 No help against '+DIS[G.dis].name;
+  });
+  // deliberately vague: only 3 fuzzy states, plus a hidden per-round estimation error
+  const diff = strength(0)+G.fog-needed();
+  let lbl,col,w;
+  if(diff<-10){lbl='😟 Uh-oh… looks shaky';col='#ff8a3d';w=25}
+  else if(diff<10){lbl='🤔 Hard to tell…';col='#ffd93d';w=50}
+  else {lbl='🙂 Looks okay?';col='#8fe04a';w=75}
+  $('#meterLbl').textContent=lbl;
+  const f=$('#meterFill'); f.style.width=w+'%'; f.style.background=col;
+}
+$('#doneBtn').onclick=unleash;
+
+/* ---------- DISASTER SCENE ---------- */
+const SW=720, SH=420, GROUND=340;
+function sceneCells(cs){
+  const list=[]; let minX=99,maxX=-1,minY=99,maxY=-1;
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++) if(G.cells[y][x]){
+    minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+  }
+  const w=maxX-minX+1,h=maxY-minY+1;
+  const s=Math.min(24,Math.floor(230/h),Math.floor(320/w));
+  const ox=(SW/2-(w*s)/2)-60, oy=GROUND-h*s;
+  for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++) if(G.cells[y][x]){
+    list.push({gx:x,gy:y,x:ox+(x-minX)*s,y:oy+(y-minY)*s,ox:ox+(x-minX)*s,oy:oy+(y-minY)*s,s:s,mat:matAt(x,y),
+      vx:0,vy:0,rot:0,vr:0,fall:false,seed:x*31+y*17});
+  }
+  return {list,s,ox,oy,w,h};
+}
+let SC=null;
+function drawScene(canvas,type,t,opt){
+  const c=canvas.getContext('2d'), d=DIS[type];
+  const sx=canvas.width/SW; c.save(); c.scale(sx,sx);
+  const g=c.createLinearGradient(0,0,0,GROUND); g.addColorStop(0,d.sky[0]); g.addColorStop(1,d.sky[1]);
+  c.fillStyle=g; c.fillRect(0,0,SW,SH);
+  if(type==='volcano') drawVolcano(c,t);
+  // sun / clouds
+  if(type!=='fire'&&type!=='hurricane'&&type!=='tornado'){c.fillStyle='rgba(255,255,255,.7)';c.beginPath();c.arc(90,70,30,0,7);c.fill();}
+  // ground
+  c.fillStyle=d.ground; c.fillRect(0,GROUND,SW,SH-GROUND);
+  c.fillStyle='rgba(255,255,255,.18)';
+  for(let i=0;i<SW;i+=24)c.fillRect(i,GROUND+((i/24)%2?10:26),14,5);
+  if(!SC||opt.preview) SC=sceneCells();
+  SC.list.forEach(k=>{ drawCell(c,k.mat,k.x,k.y,k.s+.5,k.seed,k.ox,k.oy); });
+  // roof outline shine
+  c.restore();
+}
+function drawVolcano(c,t){
+  c.fillStyle='#4a3a42'; c.beginPath(); c.moveTo(430,GROUND); c.lineTo(560,110); c.lineTo(600,110); c.lineTo(720,GROUND); c.fill();
+  c.fillStyle='#ff4a1c'; c.beginPath(); c.moveTo(560,110); c.lineTo(580,90); c.lineTo(600,110); c.fill();
+  if(t>0){ c.fillStyle='rgba(60,50,60,'+Math.min(.8,t)+')'; for(let i=0;i<6;i++){c.beginPath();c.arc(580+Math.sin(i+t*3)*30,80-i*22-t*30,24+i*4,0,7);c.fill();} }
+}
+
+
+/* ---------- ITEMS SHOWN IN THE SCENE ---------- */
+const ZONE = {};
+const setZone=(z,names)=>names.forEach(n=>ZONE[n]=z);
+setZone('under',['Base Isolators','Deep Foundation','Storm Cellar','Bomb Shelter','Retaining Wall','Flexible Pipes','Sump Pump','Lava Channel','Molasses Diversion Ditch']);
+setZone('roof',['Hurricane Straps','Low Rounded Roof','Fireproof Roof','Heated Roof','Steep Roof','Ash-Proof Roof','Lava Bomb Shield','Heavy Roof Beams','Green Roof','Sprinkler System','Camouflage Net','Giant Slide','1000 Balloons','Bouncy Castle','Rubber Duck Army','Cake Fort']);
+setZone('sky',['Early Warning Alarm','Air Raid Siren','Gas Detectors','Air Filters']);
+setZone('wall',['Shear Walls','Cross Bracing','Storm Shutters','Fire-Resistant Paint','Extra Insulation','Reinforced Concrete','Blast Walls','Shatterproof Windows','Fire Doors','Extra-Thick Foundation Bolts','Regular Inspections','Emergency Kit','Backup Generator']);
+let PLACED=[], MOUNTED=[];   // PLACED = all purchased icons, MOUNTED = the ones attached to the building
+// the intact building is painted once into an image (fast); falling pieces are cut out of it
+let BLDG=null;
+function buildSprite(){
+  BLDG=document.createElement('canvas'); BLDG.width=SW; BLDG.height=SH; const b=BLDG.getContext('2d');
+  SC.list.forEach(k=>drawCell(b,k.mat,k.x,k.y,k.s+.5,k.seed,k.ox,k.oy));
+}
+function layoutItems(){
+  PLACED=[]; MOUNTED=[];
+  const bx0=SC.ox, bx1=SC.ox+SC.w*SC.s, top=SC.oy, n={under:0,roof:0,sky:0,wall:0,ground:0}, SZ=22;
+  const cx=(bx0+bx1)/2, cands=SC.list.slice().sort((a,b)=>Math.hypot(a.x-cx,a.y-(top+SC.h*SC.s/2))-Math.hypot(b.x-cx,b.y-(top+SC.h*SC.s/2)));
+  const taken=[];
+  [...G.picked].map(id=>ITEMS[id]).forEach(it=>{
+    const z=ZONE[it.name]||'ground', k=n[z]++; let x,y;
+    if(z==='roof'){ const cols=Math.max(2,Math.floor((bx1-bx0)/(SZ+4))); x=bx0+(k%cols)*(SZ+4)+SZ/2; y=top-SZ-Math.floor(k/cols)*(SZ+4); }
+    else if(z==='sky'){ x=70+k*46; y=34; }
+    else if(z==='under'){ x=70+(k%12)*46; y=GROUND+18+Math.floor(k/12)*30; }
+    else if(z==='wall'){
+      const c=cands.find(c=>taken.every(t=>Math.hypot(t[0]-c.x,t[1]-c.y)>SZ+2));
+      if(c){ x=c.x+c.s/2; y=c.y+c.s/2-SZ/2; taken.push([c.x,c.y]); } else { x=cx; y=top; }
+    } else {
+      const side=k%2, rank=Math.floor(k/2), col=rank%3, row=Math.floor(rank/3);
+      x=side?bx1+26+col*30:bx0-26-col*30; y=GROUND-SZ-3-row*28;
+    }
+    x=Math.max(SZ,Math.min(SW-SZ,x)); y=Math.max(4,y);
+    const o={it:it,e:it.e,bonus:it.fx[G.dis]||0,zone:z,x:x-SZ/2,y:y,s:SZ,vx:0,vy:0,rot:0,vr:0,fall:false,phase:Math.random()*6};
+    PLACED.push(o); if(z==='roof'||z==='wall') MOUNTED.push(o);
+  });
+}
+function drawItemIcon(c,o,t,env,time){
+  c.save();
+  const cx=o.x+o.s/2, cy=o.y+o.s/2;
+  c.translate(cx,cy); c.rotate(o.rot);
+  let sc=1;
+  if(o.bonus>0){ sc=1+.12*Math.sin(time*6+o.phase)*env; }                 // helpers pulse
+  else { c.rotate(Math.sin(time*9+o.phase)*.25*env); }                      // decoys just wobble
+  c.scale(sc,sc);
+  c.fillStyle='rgba(255,255,255,.85)'; c.beginPath(); c.arc(0,0,o.s/2+3,0,7); c.fill();
+  c.lineWidth=3; c.strokeStyle=o.bonus>0?'#1fae5f':'#9a9a9a'; c.stroke();
+  if(o.bonus>0&&env>.25){ c.strokeStyle='rgba(61,220,132,'+(.35+.3*Math.sin(time*8+o.phase))+')'; c.lineWidth=5; c.beginPath(); c.arc(0,0,o.s/2+7,0,7); c.stroke(); }
+  c.font=(o.s-2)+'px serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillStyle='#000'; c.fillText(o.e,0,1);
+  if(o.bonus>0&&env>.3&&!o.fall){
+    c.rotate(-o.rot); c.font='bold 12px sans-serif'; c.lineWidth=3; c.strokeStyle='#fff'; c.fillStyle='#0b7a3e';
+    c.strokeText('+'+o.bonus,0,-o.s/2-9); c.fillText('+'+o.bonus,0,-o.s/2-9);
+  }
+  c.restore();
+}
+
+/* ---------- ANIMATION ---------- */
+const COLLAPSE = {quake:.45,hurricane:.5,tornado:.5,flood:.5,fire:.6,tsunami:.55,blizzard:.75,volcano:.65,bomb:.6,molasses:.55,gas:.5};
+function unleash(){
+  clearInterval(G.timerId); G.timerId=null;
+  const str = strength(G.luck), need = needed(), ok = str>=need;
+  $('#simTitle').textContent=DIS[G.dis].emoji+' '+DIS[G.dis].name+' in '+G.loc.replace(/^\S+\s/,'')+'!';
+  show('sim'); SC=null; playDisaster(G.dis,ok,5.2);
+  const cv=$('#simCanvas'), c=cv.getContext('2d');
+  SC=sceneCells(); layoutItems(); buildSprite();
+  $('#simLegend').innerHTML=PLACED.length?PLACED.map(o=>'<span class="'+(o.bonus>0?'h':'z')+'">'+o.e+' '+o.it.name+(o.bonus>0?' +'+o.bonus:'')+'</span>').join(''):'<span class="z">No defenses bought!</span>';
+  const type=G.dis, dur=5200, start=performance.now(), cf=COLLAPSE[type];
+  let last=start, collapsed=false;
+  const parts=[]; // ambient particles
+  for(let i=0;i<120;i++)parts.push({x:Math.random()*SW,y:Math.random()*SH,v:Math.random()});
+  function frame(now){
+    const t=Math.min(1,(now-start)/dur), dt=Math.min(.05,(now-last)/1000); last=now;
+    // start collapse
+    if(!ok && !collapsed && t>=cf){
+      collapsed=true;
+      SC.list.concat(MOUNTED).forEach(k=>{
+        k.fall=true;
+        const r=Math.random(), top=(GROUND-k.y)/(SC.h*SC.s||1);
+        if(type==='hurricane'){k.vx=60+r*260*top;k.vy=-r*80;}
+        else if(type==='tornado'){k.vx=(r-.3)*200;k.vy=-150-r*250;}
+        else if(type==='tsunami'){k.vx=-120-r*260;k.vy=-r*120;}
+        else if(type==='flood'){k.vx=-30-r*60;k.vy=-r*30;}
+        else if(type==='quake'){k.vx=(r-.5)*220;k.vy=-r*120;}
+        else if(type==='bomb'||type==='gas'){k.vx=(r-.5)*500;k.vy=-150-r*350;}
+        else if(type==='molasses'){k.vx=-40-r*70;k.vy=-r*20;}
+        else {k.vx=(r-.5)*70;k.vy=-r*60;}
+        k.vr=(Math.random()-.5)*(type==='fire'?1:6);
+      });
+    }
+    if(collapsed){
+      SC.list.concat(MOUNTED).forEach(k=>{
+        const grav = type==='tornado' ? 250 : (type==='flood'||type==='molasses')?60:900;
+        k.vy+=grav*dt; k.x+=k.vx*dt; k.y+=k.vy*dt; k.rot+=k.vr*dt;
+        if(k.y+k.s>GROUND && !(type==='flood'||type==='molasses')){k.y=GROUND-k.s;k.vy*=-.2;k.vx*=.7;k.vr*=.6;}
+        if((type==='flood'||type==='molasses')&&k.y+k.s>GROUND+6){k.y=GROUND+6-k.s;}
+      });
+    }
+    renderSim(c,type,t,ok,parts,now);
+    if(t<1) requestAnimationFrame(frame); else setTimeout(()=>showResult(ok,str,need),700);
+  }
+  requestAnimationFrame(frame);
+}
+
+function renderSim(c,type,t,ok,parts,now){
+  const d=DIS[type], time=now/1000;
+  c.save(); c.clearRect(0,0,SW,SH);
+  const g=c.createLinearGradient(0,0,0,GROUND); g.addColorStop(0,d.sky[0]); g.addColorStop(1,d.sky[1]);
+  c.fillStyle=g; c.fillRect(0,0,SW,SH);
+  if(type==='volcano') drawVolcano(c,t);
+  if(type==='fire'){ c.fillStyle='rgba(255,90,0,'+(.15+.25*Math.sin(time*8)*.5+.15)+')'; c.fillRect(0,0,SW,SH); }
+  // storm clouds
+  if(['hurricane','tornado','blizzard','flood'].includes(type)){
+    c.fillStyle=type==='blizzard'?'rgba(255,255,255,.8)':'rgba(40,50,70,.6)';
+    for(let i=0;i<7;i++){c.beginPath();c.arc(i*120-((time*20)%120)+40,40+(i%2)*20,55,0,7);c.fill();}
+  }
+  c.fillStyle=d.ground; c.fillRect(0,GROUND,SW,SH-GROUND);
+  c.fillStyle='rgba(255,255,255,.18)';
+  for(let i=0;i<SW;i+=24)c.fillRect(i,GROUND+((i/24)%2?10:26),14,5);
+
+  // building transform
+  c.save();
+  const env=Math.sin(Math.PI*Math.min(1,t*1.1)); // 0..1..0 intensity
+  let bx=0,by=0,lean=0;
+  if(type==='quake'){ bx=Math.sin(time*45)*8*env; by=Math.abs(Math.sin(time*37))*3*env; }
+  if(type==='hurricane'||type==='tornado'){ lean=Math.sin(time*9)*.02*env+.03*env; }
+  if(type==='tsunami'||type==='flood'){ bx=Math.sin(time*10)*1.5*env; }
+  const pivotX=SC.ox+SC.w*SC.s/2, pivotY=GROUND;
+  c.translate(pivotX+bx,pivotY+by); c.rotate(ok?lean:(collapsed(t,type)?0:lean)); c.translate(-pivotX,-pivotY);
+  let drewIntact=false;
+  SC.list.forEach(k=>{
+    c.save();
+    if(k.fall){ c.translate(k.x+k.s/2,k.y+k.s/2); c.rotate(k.rot); c.translate(-k.s/2,-k.s/2);
+      c.drawImage(BLDG,k.ox,k.oy,k.s+.5,k.s+.5,0,0,k.s+.5,k.s+.5); c.strokeStyle='rgba(25,12,35,.5)'; c.lineWidth=1; c.strokeRect(.5,.5,k.s-.5,k.s-.5);
+      if(type==='fire'){c.fillStyle='rgba(20,10,10,.6)';c.fillRect(0,0,k.s,k.s);} }
+    else { if(!drewIntact){ c.drawImage(BLDG,0,0); drewIntact=true; }
+      if(type==='fire'&&!ok){c.fillStyle='rgba(20,10,10,'+Math.min(.6,t*.8)+')';c.fillRect(k.x,k.y,k.s,k.s);} }
+    c.restore();
+  });
+  MOUNTED.forEach(o=>drawItemIcon(c,o,t,env,time));
+  c.restore();
+  PLACED.filter(o=>!MOUNTED.includes(o)).forEach(o=>drawItemIcon(c,o,t,env,time));
+
+  // disaster foreground
+  switch(type){
+    case 'quake':
+      c.strokeStyle='#2b1b5a'; c.lineWidth=3;
+      for(let i=0;i<5;i++){
+        const x=60+i*140, l=Math.min(1,t*2)*(40+i*8);
+        c.beginPath(); c.moveTo(x,GROUND); for(let j=1;j<=6;j++)c.lineTo(x+(j%2?8:-8)*(j/3),GROUND+l*j/6); c.stroke();
+      }
+      c.fillStyle='rgba(160,130,100,.5)';
+      for(let i=0;i<20;i++){c.beginPath();c.arc((i*61+time*30)%SW,GROUND-((time*40+i*17)%60),3+i%4,0,7);c.fill();}
+      break;
+    case 'hurricane':
+      c.strokeStyle='rgba(200,230,255,.8)'; c.lineWidth=2;
+      parts.forEach(p=>{const x=(p.x+time*700*(.6+p.v))%SW,y=(p.y+time*500*(.6+p.v))%SH;c.beginPath();c.moveTo(x,y);c.lineTo(x-22,y-8);c.stroke();});
+      c.fillStyle='rgba(40,120,200,.75)';
+      c.beginPath();c.moveTo(0,SH);for(let x=0;x<=SW;x+=20)c.lineTo(x,GROUND+10-env*18+Math.sin(x/30+time*6)*8);c.lineTo(SW,SH);c.fill();
+      break;
+    case 'tornado': {
+      const fx=-100+t*(SW+200)*.75+60;
+      for(let i=0;i<18;i++){
+        const yy=GROUND-i*(GROUND/18), w=10+i*7, off=Math.sin(time*8+i*.6)*10;
+        c.fillStyle='rgba('+(70+i*4)+','+(80+i*4)+','+(85+i*4)+',.85)';
+        c.beginPath();c.ellipse(fx+off+(i-9)*2,yy,w,8,0,0,7);c.fill();
+      }
+      c.fillStyle='#5a4632';
+      for(let i=0;i<14;i++){const a=time*6+i,r=30+i*6;c.fillRect(fx+Math.cos(a)*r,GROUND-30-i*18+Math.sin(a)*8,6,6);}
+      break; }
+    case 'flood': {
+      const lvl=6+t*SC.h*SC.s*.55;
+      c.fillStyle='rgba(30,140,220,.65)';
+      c.beginPath();c.moveTo(0,SH);for(let x=0;x<=SW;x+=16)c.lineTo(x,GROUND-lvl+Math.sin(x/25+time*3)*5);c.lineTo(SW,SH);c.fill();
+      c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=2;c.beginPath();
+      for(let x=0;x<=SW;x+=16)c.lineTo(x,GROUND-lvl+Math.sin(x/25+time*3)*5);c.stroke();
+      c.strokeStyle='rgba(200,230,255,.8)';
+      parts.forEach(p=>{const x=p.x,y=(p.y+time*400*(.6+p.v))%GROUND;c.beginPath();c.moveTo(x,y);c.lineTo(x-3,y+12);c.stroke();});
+      break; }
+    case 'fire': {
+      const n=Math.floor(10+t*40);
+      for(let i=0;i<n;i++){
+        const x=((i*97)%SW), base=GROUND+((i*13)%20), hgt=30+((i*37)%50)+Math.sin(time*10+i)*12;
+        flame(c,x,base,hgt*(.4+t));
+      }
+      if(!ok||true){ // flames on the building
+        const fstep=Math.max(3,Math.floor(SC.list.length/45));
+        SC.list.filter(k=>!k.fall).forEach((k,i)=>{ if(i%fstep===0) flame(c,k.x+k.s/2,k.y+k.s,(12+((i*7)%12))*(ok?(1-t)*1.4+.2:1+t)); });
+      }
+      c.fillStyle='rgba(60,60,60,.35)';
+      for(let i=0;i<8;i++){c.beginPath();c.arc(120+i*80+Math.sin(time+i)*20,120-((time*30+i*30)%100),35,0,7);c.fill();}
+      break; }
+    case 'tsunami': {
+      let front=SW+60-t/.6*(SW+160), h=250;
+      if(t>.6){ h=250*(1-(t-.6)/.4); front=-100; }
+      if(t<=.6) front=Math.max(front,-100);
+      c.fillStyle='rgba(20,110,210,.8)';
+      c.beginPath();c.moveTo(front,SH);c.lineTo(front,GROUND-h);
+      for(let x=front;x<=SW;x+=14)c.lineTo(x,GROUND-h+Math.sin(x/20+time*5)*8+(x-front)*.02);
+      c.lineTo(SW,SH);c.fill();
+      c.fillStyle='rgba(255,255,255,.85)';
+      for(let i=0;i<14;i++){c.beginPath();c.arc(front+Math.sin(i*3+time*4)*20+i*4,GROUND-h+10+i*8,6+i%3*2,0,7);c.fill();}
+      break; }
+    case 'blizzard': {
+      c.fillStyle='#fff';
+      parts.forEach(p=>{const x=(p.x+time*380*(.5+p.v))%SW,y=(p.y+time*160*(.6+p.v))%SH;c.beginPath();c.arc(x,y,2+p.v*3,0,7);c.fill();});
+      c.fillStyle='rgba(255,255,255,.95)';
+      c.beginPath();c.moveTo(0,SH);for(let x=0;x<=SW;x+=20)c.lineTo(x,GROUND+4-t*22+Math.sin(x/40)*4);c.lineTo(SW,SH);c.fill();
+      // snow on roof
+      SC.list.filter(k=>!k.fall&&(k.gy===0||!G.cells[k.gy-1]||!G.cells[k.gy-1][k.gx])).forEach(k=>{c.fillRect(k.x,k.y-t*8,k.s,t*8+2);});
+      break; }
+    case 'bomb': {
+      // falling bombs + explosions
+      for(let i=0;i<7;i++){
+        const life=(t*1.6+i*.19)%1, bxp=80+((i*211)%520), byp=-30+life*(GROUND+30);
+        if(life<.85){ c.save();c.translate(bxp,byp);c.rotate(.2);c.fillStyle='#222';c.beginPath();c.ellipse(0,0,7,13,0,0,7);c.fill();
+          c.fillStyle='#c33';c.fillRect(-6,-16,12,5);c.restore(); }
+        else { const r=(life-.85)/.15; c.fillStyle='rgba(255,'+(200-r*120)+',30,'+(1-r)+')';c.beginPath();c.arc(bxp,GROUND,20+r*50,0,7);c.fill(); }
+      }
+      c.fillStyle='rgba(70,60,60,.4)';
+      for(let i=0;i<8;i++){c.beginPath();c.arc(60+i*90+Math.sin(time+i)*15,GROUND-20-((time*25+i*20)%80),30,0,7);c.fill();}
+      if(t>.55&&t<.7){c.fillStyle='rgba(255,255,220,'+(1-(t-.55)/.15)*.7+')';c.fillRect(0,0,SW,SH);}
+      break; }
+    case 'molasses': {
+      const front=SW+40-Math.min(1,t/.7)*(SW+120);
+      c.fillStyle='rgba(74,38,12,.92)';
+      const top=GROUND-70-Math.sin(t*3)*6;
+      c.beginPath();c.moveTo(front,SH);c.lineTo(front,top+40);
+      for(let x=front;x<=SW;x+=18)c.lineTo(x,top+(x-front<80?(80-(x-front))*.5:0)+Math.sin(x/30+time*1.5)*4);
+      c.lineTo(SW,SH);c.fill();
+      c.fillStyle='rgba(190,110,40,.55)';
+      c.beginPath();for(let x=front;x<=SW;x+=18)c.lineTo(x,top+2+Math.sin(x/30+time*1.5)*4);c.lineTo(SW,top+14);c.lineTo(front,top+14);c.fill();
+      c.fillStyle='#6b3a14';
+      for(let i=0;i<6;i++){const x=front+30+i*70,y=GROUND-60+((time*20+i*13)%40);c.beginPath();c.arc(x,y,5,0,7);c.fill();}
+      break; }
+    case 'gas': {
+      c.fillStyle='rgba(120,200,120,.18)';
+      for(let i=0;i<10;i++){c.beginPath();c.arc(420+i*30+Math.sin(time*2+i)*10,GROUND-20-(i%3)*20,40,0,7);c.fill();}
+      if(t>.35){ const r=Math.min(1,(t-.35)/.3);
+        const g2=c.createRadialGradient(560,GROUND-20,10,560,GROUND-20,60+r*260);
+        g2.addColorStop(0,'rgba(255,255,220,'+(1-r*.6)+')');g2.addColorStop(.3,'rgba(255,170,30,'+(.9-r*.5)+')');g2.addColorStop(1,'rgba(255,60,0,0)');
+        c.fillStyle=g2;c.beginPath();c.arc(560,GROUND-20,60+r*260,0,7);c.fill(); }
+      if(t>.5) for(let i=0;i<10;i++) flame(c,(i*83)%SW,GROUND+8,26+((i*17)%30)+Math.sin(time*10+i)*8);
+      break; }
+    case 'volcano':
+      for(let i=0;i<14;i++){
+        const life=((time*.9+i*.31)%1), x=560-(i*47)%520+life*30, y=-20+life*(GROUND+20);
+        if(x<0)continue;
+        c.fillStyle=i%2?'#ff7a1c':'#ffd23d'; c.beginPath();c.arc(x,y,8+i%3*3,0,7);c.fill();
+        c.fillStyle='rgba(255,100,20,.3)';c.beginPath();c.arc(x,y-14,6,0,7);c.fill();
+      }
+      c.fillStyle='rgba(255,80,10,.85)';
+      c.beginPath();c.moveTo(430+(1-t)*0,GROUND);c.lineTo(470,GROUND-40);
+      c.lineTo(SW,GROUND);c.fill(); // lava glow on slopes
+      c.fillStyle='rgba(70,60,70,.35)'; c.fillRect(0,0,SW,SH*(.2+t*.25));
+      break;
+  }
+  c.restore();
+}
+function collapsed(t,type){ return t>=COLLAPSE[type]; }
+function flame(c,x,y,h){
+  c.fillStyle='#ff5a1c'; c.beginPath();c.moveTo(x-h*.3,y);c.quadraticCurveTo(x-h*.2,y-h*.6,x,y-h);c.quadraticCurveTo(x+h*.25,y-h*.5,x+h*.3,y);c.fill();
+  c.fillStyle='#ffd23d'; c.beginPath();c.moveTo(x-h*.15,y);c.quadraticCurveTo(x-h*.1,y-h*.4,x,y-h*.6);c.quadraticCurveTo(x+h*.12,y-h*.3,x+h*.15,y);c.fill();
+}
+
+/* ---------- RESULT ---------- */
+function showResult(ok,str,need){
+  if(ok) G.score++; else G.lives--;
+  $('#resEmoji').textContent=ok?'🏆':'💥';
+  const t=$('#resTitle'); t.textContent=ok?'Your building SURVIVED! +1 point':'Oh no! Your building collapsed!';
+  t.className=ok?'win':'lose';
+  $('#resStr').textContent=Math.round(str); $('#resNeed').textContent=need;
+  const i=DI[G.dis], why=[];
+  const best=[...G.mats].sort((a,b)=>MATS[b].s[i]-MATS[a].s[i]), worst=best[best.length-1];
+  why.push('💪 Best material vs '+DIS[G.dis].name+': <b>'+MATS[best[0]].name+'</b> ('+MATS[best[0]].s[i]+'/10)');
+  if(MATS[worst].s[i]<=4) why.push('⚠️ Weak spot: <b>'+MATS[worst].name+'</b> only scored '+MATS[worst].s[i]+'/10');
+  const helpers=[...G.picked].filter(id=>ITEMS[id].fx[G.dis]).sort((a,b)=>ITEMS[b].fx[G.dis]-ITEMS[a].fx[G.dis]);
+  if(helpers.length) why.push('🛠️ Top helper: <b>'+ITEMS[helpers[0]].e+' '+ITEMS[helpers[0]].name+'</b> (+'+ITEMS[helpers[0]].fx[G.dis]+')');
+  else why.push('🤔 None of your items helped against this disaster!');
+  const silly=[...G.picked].filter(id=>!Object.keys(ITEMS[id].fx).length).length;
+  if(silly) why.push('🎈 '+silly+' silly item'+(silly>1?'s':'')+' didn\'t help at all (but they were fun).');
+  if(sizeMod()<0) why.push('📏 Your building was tall and wobbly. Shorter is safer here!');
+  if(!ok){ const tip=ITEMS.filter(x=>(x.fx[G.dis]||0)>=14)[0]; why.push('💡 Tip: try items like <b>'+ITEMS.filter(x=>(x.fx[G.dis]||0)>=14).map(x=>x.name).slice(0,3).join(', ')+'</b> next time.'); }
+  $('#resWhy').innerHTML=why.map(w=>'<li>'+w+'</li>').join('');
+  jingle(ok);
+  G.round++;
+  $('#againBtn').textContent = G.lives>0 ? '➜ Next building!' : '🏁 See final score';
+  if(!ok && G.lives>0) why.push('❤️ You have '+G.lives+' li'+(G.lives>1?'ves':'fe')+' left.');
+  $('#resWhy').innerHTML=why.map(w=>'<li>'+w+'</li>').join('');
+  show('result');
+  if(ok) confetti();
+}
+function confetti(){
+  const em=['🎉','⭐','🎊','✨','💥','🌈'];
+  for(let i=0;i<40;i++){
+    const e=document.createElement('div'); e.className='conf'; e.textContent=rnd(em);
+    e.style.left=Math.random()*100+'vw'; e.style.animationDelay=Math.random()*1.2+'s';
+    document.body.appendChild(e); setTimeout(()=>e.remove(),4500);
+  }
+}
+$('#againBtn').onclick=()=>{ if(G.lives>0) newRound(); else gameOver(); };
+
+/* ---------- LEADERBOARD ---------- */
+function gameOver(){
+  $('#finalScore').textContent=G.score; $('#finalS').textContent=G.score===1?'':'s';
+  $('#saveBox').style.display=G.score>0?'block':'none';
+  try{ $('#nameIn').value=localStorage.getItem('dbName')||''; }catch(e){}
+  show('over'); jingle(G.score>0);
+}
+$('#saveBtn').onclick=()=>{
+  const name=($('#nameIn').value.trim()||'Builder').slice(0,12);
+  try{localStorage.setItem('dbName',name)}catch(e){}
+  const b=loadBoard(), entry={name:name,score:G.score,date:Date.now()};
+  b.push(entry); b.sort((x,y)=>y.score-x.score||x.date-y.date);
+  const top=b.slice(0,10); saveBoard(top); refreshBest();
+  showBoard(top.indexOf(entry)>=0?top.findIndex(e=>e.date===entry.date&&e.name===name&&e.score===G.score):-1);
+};
+function showBoard(hi){
+  const t=$('#boardTable'), b=loadBoard(); t.innerHTML='';
+  if(!b.length){ t.innerHTML='<tr><td colspan="3" style="text-align:center;border:3px solid var(--ink);border-radius:12px">No scores yet — be the first! 🏗️</td></tr>'; }
+  const medals=['🥇','🥈','🥉'];
+  b.forEach((e,i)=>{
+    const tr=document.createElement('tr'); if(i===hi)tr.className='me'; else if(i===0)tr.className='r1';
+    const c1=document.createElement('td'), c2=document.createElement('td'), c3=document.createElement('td');
+    c1.textContent=medals[i]||(i+1); c2.textContent=e.name+' ';
+    const d=document.createElement('small'); d.textContent=new Date(e.date).toLocaleDateString(); c2.appendChild(d);
+    c3.textContent=e.score+' ⭐'; tr.append(c1,c2,c3); t.appendChild(tr);
+  });
+  show('board');
+}
+$('#overAgain').onclick=startGame; $('#boardPlay').onclick=startGame;
+$('#overBoard').onclick=()=>showBoard(-1);
+$('#boardTitle').onclick=()=>show('title');
+$('#boardClear').onclick=()=>{ if(confirm('Erase all high scores?')){ saveBoard([]); refreshBest(); showBoard(-1); } };
+$('#nameIn').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#saveBtn').click(); });
+render();
+$('#muteBtn').onclick=()=>setMute(!muted); setMute(muted);
+</script>
+</body>
+</html>
